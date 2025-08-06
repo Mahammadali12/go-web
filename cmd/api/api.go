@@ -1,7 +1,7 @@
 package main
 
 import (
-	"encoding/json"
+	// "encoding/json"
 	"log"
 	"net/http"
 	"time"
@@ -18,7 +18,7 @@ type Config struct{
     Addr string
 }
 
-var users = []User{} 
+var users = []User{}
 
 func (app *App) mount() http.Handler{
     r := chi.NewRouter()
@@ -26,10 +26,14 @@ func (app *App) mount() http.Handler{
     r.Use(middleware.Recoverer)
 	r.Use(middleware.Logger)
 
-    r.Route("/v1",func(r chi.Router) {
-        r.Get("/health",app.healthCheckHandler)
-    })
+    r.Get("/register", app.getRegisterPage)
+    r.Post("/register", app.handleUserRegister)
 
+    r.Get("/login", app.getLoginPage)
+
+    
+	fs := http.StripPrefix("/static/",http.FileServer(http.Dir("static/")))
+    r.Handle("/static/*",fs)
     
     return  r
 }
@@ -51,34 +55,34 @@ func (app *App) run(mux http.Handler) error{
 }
 
 
-func (a *App) createUserHandler(w http.ResponseWriter, r *http.Request){
+// func (a *App) createUserHandler(w http.ResponseWriter, r *http.Request){
 
-    var payload User
+//     var payload User
 
-    err := json.NewDecoder(r.Body).Decode(&payload)
+//     err := json.NewDecoder(r.Body).Decode(&payload)
 
-    if err != nil {
-        http.Error(w, err.Error(), http.StatusBadRequest)
-    }
+//     if err != nil {
+//         http.Error(w, err.Error(), http.StatusBadRequest)
+//     }
 
-    u := User{
-        FirstName: payload.FirstName,
-        LastName: payload.LastName,
-    }
+//     u := User{
+//         FirstName: payload.FirstName,
+//         LastName: payload.LastName,
+//     }
 
-    users = append(users,u)
+//     users = append(users,u)
 
-    w.WriteHeader(http.StatusCreated)
-}
+//     w.WriteHeader(http.StatusCreated)
+// }
 
-func (a *App) getUserHandler(w http.ResponseWriter, r *http.Request){
-    w.Header().Set("Content-Type","application/json")
+// func (a *App) getUserHandler(w http.ResponseWriter, r *http.Request){
+//     w.Header().Set("Content-Type","application/json")
 
-    err := json.NewEncoder(w).Encode(users)
+//     err := json.NewEncoder(w).Encode(users)
 
-    if err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
-        return
-    }
-    w.WriteHeader(http.StatusOK)
-}
+//     if err != nil {
+//         http.Error(w, err.Error(), http.StatusInternalServerError)
+//         return
+//     }
+//     w.WriteHeader(http.StatusOK)
+// }
